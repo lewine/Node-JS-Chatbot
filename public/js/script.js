@@ -1,8 +1,6 @@
-//reference from id in index.js
 var sendBtn = document.getElementById('sendBtn');
 var textbox = document.getElementById('textbox');
 var chatContainer = document.getElementById('chatContainer');
-var user = {message:""};
 
 function sendMessage(userMessage) {
     var messageElement = document.createElement('div');
@@ -11,38 +9,45 @@ function sendMessage(userMessage) {
     messageElement.style.marginTop = "10px";
 
     messageElement.innerHTML = "<span> You: </span>" +
-                            "<span>" +userMessage+ "</span>";
+        "<span>" + userMessage + "</span>";
 
     chatContainer.appendChild(messageElement);
 }
 
-function chatbotResponse(userMessage) { //need to implement AI
-
-    var chatbotmessage = "";
-
-    if(userMessage == "Hi"){ 
-        chatbotmessage = "Hello! How are you?"
-    }
-
+function chatbotResponse(chatbotMessage) {
     var messageElement = document.createElement('div');
 
     messageElement.innerHTML = "<span> Chatbot: </span>" +
-                            "<span>" + chatbotmessage + "</span>";
+        "<span>" + chatbotMessage + "</span>";
 
     chatContainer.appendChild(messageElement);
 }
 
-//listener for button
-sendBtn.addEventListener('click', function(e) {
+sendBtn.addEventListener('click', async function () {
     var userMessage = textbox.value;
-    if(userMessage == "") {
+    if (userMessage === "") {
         alert('Please type a message');
-    }else {
+    } else {
         let userMessageText = userMessage.trim();
-        user.message = userMessageText;
         textbox.value = "";
         sendMessage(userMessageText);
 
-        chatbotResponse(userMessageText);
+        //Send user message to the backend and get the chatbot response
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: userMessageText }),
+            });
+
+            const data = await response.json();
+            chatbotResponse(data.response);
+
+        } catch (error) {
+            console.error('Error:', error);
+            chatbotResponse('Sorry, something went wrong.');
+        }
     }
-})
+});
