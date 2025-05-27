@@ -9,9 +9,11 @@ app.use(express.static('public'));
 app.use(express.json()); 
 app.set('view engine', 'ejs');
 
-app.listen(8080, () => {
-    console.log(colors.bold.green('Server is running on http://localhost:8080'));
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
+
 
 app.get('/', function (req, res) {
     res.render('pages/index');
