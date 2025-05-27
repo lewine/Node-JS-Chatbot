@@ -117,10 +117,10 @@
       chatbox.scrollTop = chatbox.scrollHeight;
 
       try {
-        const res = await fetch("/api", {
+        const res = await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: message })
+          body: JSON.stringify({ message: message })
         });
 
         const data = await res.json();

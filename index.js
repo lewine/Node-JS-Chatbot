@@ -22,35 +22,31 @@ app.get('/', function (req, res) {
 //Store conversation history
 const chatHistory = [];
 
-app.post('/chat', async (req, res) => {
-    const userMessage = req.body.message;
+app.post("/chat", async (req, res) => {
+  const userMessage = req.body.message;
 
-    try {
-        //construct messages by iterating over the history
-        const messages = chatHistory.map(([role, content]) => ({ role, content }));
+  if (typeof userMessage !== "string" || !userMessage.trim()) {
+    return res.status(400).json({ error: "Invalid message content" });
+  }
 
-        //Add latest user input
-        messages.push({ role: 'user', content: userMessage });
+  try {
+    const messages = chatHistory.map(({ role, content }) => ({ role, content }));
+    messages.push({ role: "user", content: userMessage });
 
-        //call the api with user input
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: messages,
-            max_tokens: 150,
-        });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages,
+    });
 
-        //Get response
-        const completionText = completion.choices[0].message.content;
+    const completionText = completion.choices[0].message.content;
 
-        //update history with user input and assistant response
-        chatHistory.push(['user', userMessage]);
-        chatHistory.push(['assistant', completionText]);
+    chatHistory.push({ role: "user", content: userMessage });
+    chatHistory.push({ role: "assistant", content: completionText });
 
-        //Send the AI response to the frontend
-        res.json({ response: completionText });
-
-    } catch (error) {
-        console.error(colors.red(error));
-        res.status(500).json({ error: 'Failed to communicate with OpenAI' });
-    }
+    res.json({ response: completionText });
+  } catch (error) {
+    console.error("OpenAI API Error:", error);
+    res.status(500).json({ error: "Failed to communicate with OpenAI" });
+  }
 });
+
